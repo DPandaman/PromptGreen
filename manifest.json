@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "PromptGreen",
+  "version": "0.1",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.chatgpt.com/*", "*://*.google.com/*", "*://*.bing.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+  "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PromptGreen"
+  }
+}
