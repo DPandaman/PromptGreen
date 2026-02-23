@@ -1,25 +1,116 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    width: 260px;
-    padding: 12px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    width: 300px;
+    min-height: 340px;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(165deg, #0d2818 0%, #1a3d2a 45%, #0d2818 100%);
+    color: #e8f5e9;
+}
+
+.header {
+    padding: 20px 20px 14px;
     text-align: center;
-    background: #ffffff;
-    color: #08350f;
+    border-bottom: 1px solid rgba(129, 199, 132, 0.25);
 }
 
-h2 {
-    color: #0b6b2b;
-    margin-bottom: 10px;
+.logo {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 6px;
 }
 
-p {
-    margin: 5px 0;
-    font-size: 1em;
+.header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #fff;
 }
 
-button {
-    margin-top: 10px;
-    padding: 5px 10px;
-    font-size: 0.9em;
+.tagline {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #81c784;
+    letter-spacing: 0.04em;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #81c784;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #c8e6c9;
+}
+
+.impact {
+    padding: 0 20px 16px;
+    font-size: 12px;
+    color: #a5d6a7;
+}
+
+.impact-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.impact-row:last-child {
+    border-bottom: none;
+}
+
+.impact-row strong {
+    color: #c8e6c9;
+    margin-right: 2px;
+}
+
+.reset-btn {
+    display: block;
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    padding: 12px;
+    background: rgba(129, 199, 132, 0.2);
+    color: #c8e6c9;
+    border: 1px solid rgba(129, 199, 132, 0.4);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.reset-btn:hover {
+    background: rgba(129, 199, 132, 0.3);
+    border-color: rgba(129, 199, 132, 0.6);
+}
+
+.reset-btn:active {
+    transform: scale(0.98);
 }

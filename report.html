@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report – PromptGreen</title>
+  <link rel="stylesheet" href="report.css">
+</head>
+<body>
+  <div class="report-page" role="main">
+    <header class="header">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🌱</span>
+        <h1>PromptGreen Report</h1>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-ghost" id="btnExport">Export Report</button>
+        <button type="button" class="btn btn-danger" id="btnReset">Reset Data</button>
+      </div>
+    </header>
+
+    <section class="kpis" aria-label="Key metrics">
+      <div class="kpi">
+        <span class="kpi-value" id="kpiTokens">0</span>
+        <span class="kpi-label">Tokens Saved</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpiEnergy">0</span>
+        <span class="kpi-label">Energy (kWh)</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpiCo2">0</span>
+        <span class="kpi-label">CO₂ Saved (g)</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpiSessions">0</span>
+        <span class="kpi-label">Sessions</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpiTime">—</span>
+        <span class="kpi-label">Time Saved</span>
+      </div>
+    </section>
+
+    <section class="sections-grid">
+      <div class="card">
+        <h2>This Session</h2>
+        <div class="card-body" id="thisSession">
+          <p class="empty" id="thisSessionEmpty">No active session. Start one from the extension.</p>
+          <div class="session-stats" id="thisSessionStats" hidden></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>All Time</h2>
+        <div class="card-body">
+          <div class="stat-row"><span>Tokens saved</span><strong id="lifetimeTokens">0</strong></div>
+          <div class="stat-row"><span>Energy (kWh)</span><strong id="lifetimeEnergy">0</strong></div>
+          <div class="stat-row"><span>CO₂ (g)</span><strong id="lifetimeCo2">0</strong></div>
+          <div class="stat-row"><span>Total sessions</span><strong id="lifetimeSessions">0</strong></div>
+          <div class="stat-row"><span>Total time</span><strong id="lifetimeDuration">—</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Session Timeline</h2>
+      <div class="card-body">
+        <div class="timeline" id="timeline"></div>
+        <p class="empty" id="timelineEmpty">No sessions yet.</p>
+      </div>
+    </section>
+
+    <section class="card chart-section">
+      <h2>Tokens saved over time</h2>
+      <div class="card-body">
+        <canvas id="chart" width="600" height="200" aria-label="Bar chart of tokens saved per session"></canvas>
+      </div>
+    </section>
+
+    <section class="card assumptions">
+      <h2>Assumptions</h2>
+      <div class="card-body">
+        <p>Estimates depend on model, hardware, and region. You can adjust factors in Settings.</p>
+        <ul>
+          <li><strong>Tokens → Energy:</strong> <span id="assumpKwh">0.003</span> kWh per 1,000 tokens</li>
+          <li><strong>Energy → CO₂:</strong> <span id="assumpCo2">385</span> g CO₂ per kWh</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-content">
+      <h3 id="modalTitle">Reset all data?</h3>
+      <p>This will permanently delete all sessions and totals. You cannot undo this.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="modalConfirm">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/constants.js"></script>
+  <script src="shared/metrics.js"></script>
+  <script src="shared/storage.js"></script>
+  <script src="shared/ui.js"></script>
+  <script src="report.js"></script>
+</body>
+</html>

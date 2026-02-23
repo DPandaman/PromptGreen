@@ -1,0 +1,111 @@
+:root {
+  --bg: #f8faf8;
+  --text: #1a2e1a;
+  --muted: #5a6b5a;
+  --primary: #0d6b2d;
+  --border: #d0ddd0;
+  --radius: 12px;
+}
+
+[data-theme="dark"] {
+  --bg: #0f1612;
+  --text: #e2ede2;
+  --muted: #8a9a8a;
+  --primary: #2d9d4e;
+  --border: #2d3d2d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  width: 360px;
+  min-height: 420px;
+}
+
+.settings-page { padding: 20px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.back {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.back:hover { text-decoration: underline; }
+.back:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+
+.section { margin-bottom: 20px; }
+
+.section h2 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.section label {
+  display: block;
+  margin: 10px 0 4px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.section .hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.section input, .section select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.section .optional { font-weight: normal; color: var(--muted); }
+
+.section.privacy {
+  background: rgba(13, 107, 45, 0.08);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(13, 107, 45, 0.2);
+}
+
+.actions { margin-top: 24px; }
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

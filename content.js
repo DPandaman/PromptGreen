@@ -1,281 +1,334 @@
 // Inlined local helpers (avoid ES module import in content script)
 function countTokens(text) {
-    if (!text) return 0;
-    return Math.ceil(text.length / 4);
+  if (!text) return 0;
+  return Math.ceil(text.length / 4);
+}
+
+// Phrases to remove: polite padding that doesn't change the task for the model (order matters).
+const FILLER_WORDS = [
+  "please",
+  "kindly",
+  "actually",
+  "just",
+  "literally",
+  "thanks",
+  "thank you",
+  "really",
+  "basically",
+  "simply",
+];
+const OPENING_PHRASES = [
+  "Could you please",
+  "Could you",
+  "Can you please",
+  "Can you",
+  "Would you please",
+  "Would you mind",
+  "Would you",
+  "I was wondering if you could",
+  "I was wondering if",
+  "I would like you to",
+  "It would be great if you could",
+  "It would be great if",
+  "If you could",
+  "When you have time",
+  "When you get a chance",
+  "If you don't mind",
+  "If possible",
+  "When possible",
+  "At your convenience",
+];
+
+function textCouldBeOptimized(text) {
+  if (!text || text.length < 10) return false;
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length < 10) return false;
+  const lower = t.toLowerCase();
+  if (
+    FILLER_WORDS.some((f) =>
+      new RegExp("\\b" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b").test(
+        lower,
+      ),
+    )
+  )
+    return true;
+  if (OPENING_PHRASES.some((p) => lower.startsWith(p.toLowerCase())))
+    return true;
+  if (/\b(\w+)\s+\1\b/i.test(t)) return true; // repeated word
+  return false;
 }
 
 function optimizePrompt(text) {
-    if (!text) return text;
-    let optimized = text;
-    optimized = optimized.replace(/\s+/g, ' ').trim();
-    const fillers = ["please", "kindly", "actually", "just", "literally", "thanks", "thank you"];
-    fillers.forEach(f => {
-        optimized = optimized.replace(new RegExp(`\\b${f}\\b`, 'gi'), '');
-    });
-    const openings = ["Could you please", "Could you", "Can you please", "Can you", "Would you please", "Would you mind", "Would you"];
-    openings.forEach(p => {
-        optimized = optimized.replace(new RegExp(p, 'gi'), '');
-    });
-    optimized = optimized.replace(/\b(\w+)(?:\s+\1)+\b/gi, '$1');
-    optimized = optimized.replace(/\s+([,.!?;:])/g, '$1');
-    optimized = optimized.replace(/\s+/g, ' ').trim();
-    if (!optimized) return text;
-    return optimized;
+  if (!text) return text;
+  let optimized = text;
+  optimized = optimized.replace(/\s+/g, " ").trim();
+  // Remove polite openings only at the start so we don't break phrases like "what would you do"
+  OPENING_PHRASES.forEach((p) => {
+    const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    optimized = optimized.replace(
+      new RegExp("^\\s*" + escaped + "\\s*", "gi"),
+      "",
+    );
+  });
+  FILLER_WORDS.forEach((f) => {
+    optimized = optimized.replace(
+      new RegExp(
+        "\\b" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b",
+        "gi",
+      ),
+      "",
+    );
+  });
+  optimized = optimized.replace(/\b(\w+)(?:\s+\1)+\b/gi, "$1");
+  optimized = optimized.replace(/\s+([,.!?;:])/g, "$1");
+  optimized = optimized.replace(/\s+/g, " ").trim();
+  if (!optimized) return text;
+  return optimized;
 }
 
-// Lightweight real-time handler: only remove the word "please" after a short delay.
-function removePleaseAfterDelay(inputEl, isContentEditable) {
-    // clear any existing timer
-    const existing = inputEl.dataset.pleaseTimer;
-    if (existing) {
-        clearTimeout(Number(existing));
-        inputEl.dataset.pleaseTimer = '';
+// After 3s of no typing, run full prompt optimization. DOM updates are deferred to avoid freezing.
+function optimizeAfterDelay(inputEl, isContentEditable) {
+  const existing = inputEl.dataset.optimizeTimer;
+  if (existing) {
+    clearTimeout(Number(existing));
+    inputEl.dataset.optimizeTimer = "";
+  }
+
+  const t = setTimeout(() => {
+    // Element may have been replaced by the page (e.g. React re-render); use it only if still in DOM.
+    if (!inputEl.isConnected) {
+      inputEl.dataset.optimizeTimer = "";
+      return;
+    }
+    const current = isContentEditable ? (inputEl.innerText || "").trim() : (inputEl.value || "").trim();
+    if (!current || !textCouldBeOptimized(current)) {
+      inputEl.dataset.optimizeTimer = "";
+      return;
     }
 
-    // schedule removal in 3s; perform surgical removal for contenteditable fields
-    const t = setTimeout(() => {
-        const current = isContentEditable ? inputEl.innerText : inputEl.value;
-        if (!/\bplease\b/i.test(current)) { inputEl.dataset.pleaseTimer = ''; return; }
+    const optimized = optimizePrompt(current);
+    if (!optimized || optimized === current) {
+      inputEl.dataset.optimizeTimer = "";
+      return;
+    }
 
-        if (isContentEditable) {
-            try {
-                const sel = window.getSelection();
-                let caretOffset = 0;
-                if (sel && sel.rangeCount) {
-                    const range = sel.getRangeAt(0).cloneRange();
-                    const pre = range.cloneRange();
-                    pre.selectNodeContents(inputEl);
-                    pre.setEnd(range.endContainer, range.endOffset);
-                    caretOffset = pre.toString().length;
-                }
+    const savedTokens = Math.max(
+      0,
+      countTokens(current) - countTokens(optimized),
+    );
 
-                // try to remove the nearest 'please' before the caret using text-node ranges
-                const beforeText = inputEl.innerText.slice(0, caretOffset);
-                const m = /\bplease\b/i.exec(beforeText);
-                let removed = false;
-                if (m) {
-                    const startIndex = m.index;
-                    const endIndex = startIndex + m[0].length;
-                    const startPos = findNodeForOffset(inputEl, startIndex);
-                    const endPos = findNodeForOffset(inputEl, endIndex);
-                    if (startPos && endPos && startPos.node && endPos.node) {
-                        const r = document.createRange();
-                        r.setStart(startPos.node, startPos.offset);
-                        r.setEnd(endPos.node, endPos.offset);
-                        r.deleteContents();
-                        removed = true;
-                    }
-                }
+    // Defer DOM/storage to next tick; ensure we still have a live element when we run.
+    const targetEl = inputEl;
+    setTimeout(() => {
+      if (!targetEl.isConnected) return;
+      if (savedTokens > 0) {
+        chrome.runtime.sendMessage(
+          {
+            type: "recordAction",
+            payload: {
+              type: "prompt_optimize",
+              tokensSavedDelta: savedTokens,
+              meta: { source: "auto_optimize" },
+            },
+          },
+          () => {}
+        );
+      }
 
-                if (!removed) {
-                    const cleaned = inputEl.innerText.replace(/\bplease\b/gi, '').replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim();
-                    if (cleaned !== inputEl.innerText) inputEl.innerText = cleaned;
-                }
-            } catch (err) {
-                const cleaned = inputEl.innerText.replace(/\bplease\b/gi, '').replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim();
-                if (cleaned !== inputEl.innerText) inputEl.innerText = cleaned;
-            }
-        } else {
-            const start = inputEl.selectionStart;
-            const end = inputEl.selectionEnd;
-            const cleaned = current.replace(/\bplease\b/gi, '').replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim();
-            if (cleaned !== current) {
-                inputEl.value = cleaned;
-                const delta = current.length - cleaned.length;
-                const ns = Math.max(0, start - delta);
-                const ne = Math.max(0, end - delta);
-                inputEl.setSelectionRange(ns, ne);
-            }
+      targetEl.dataset._ecoUpdating = "1";
+      if (isContentEditable) {
+        try {
+          targetEl.focus();
+          targetEl.innerText = optimized;
+          targetEl.dataset.lastProcessed = optimized;
+          setCaretPosition(targetEl, optimized.length);
+          targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+        } catch (err) {
+          targetEl.innerText = optimized;
+          targetEl.dataset.lastProcessed = optimized;
         }
+      } else {
+        const start = targetEl.selectionStart;
+        const end = targetEl.selectionEnd;
+        targetEl.value = optimized;
+        targetEl.dataset.lastProcessed = optimized;
+        const len = optimized.length;
+        targetEl.setSelectionRange(Math.min(start, len), Math.min(end, len));
+        targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      targetEl.dataset.optimizeTimer = "";
+      setTimeout(() => {
+        targetEl.dataset._ecoUpdating = "";
+      }, 0);
+    }, 0);
+  }, 3000);
 
-        inputEl.dataset.pleaseTimer = '';
-    }, 3000);
-
-    inputEl.dataset.pleaseTimer = String(t);
+  inputEl.dataset.optimizeTimer = String(t);
 }
 
 function setCaretPosition(el, chars) {
-    if (chars < 0) chars = 0;
-    const selection = window.getSelection();
-    if (!selection) return;
+  if (chars < 0) chars = 0;
+  const selection = window.getSelection();
+  if (!selection) return;
+  try {
     selection.removeAllRanges();
     const range = document.createRange();
-    let nodeStack = [el], node, found = false, charCount = 0;
+    let nodeStack = [el],
+      node,
+      found = false,
+      charCount = 0;
     while (nodeStack.length && !found) {
-        node = nodeStack.shift();
-        if (node.nodeType === 3) {
-            const nextCount = charCount + node.textContent.length;
-            if (chars <= nextCount) {
-                range.setStart(node, Math.max(0, chars - charCount));
-                range.collapse(true);
-                found = true;
-                break;
-            }
-            charCount = nextCount;
-        } else {
-            for (let i = 0; i < node.childNodes.length; i++) nodeStack.unshift(node.childNodes[i]);
+      node = nodeStack.shift();
+      if (node.nodeType === 3) {
+        const len = (node.textContent || "").length;
+        const nextCount = charCount + len;
+        if (chars <= nextCount) {
+          range.setStart(node, Math.min(Math.max(0, chars - charCount), len));
+          range.collapse(true);
+          found = true;
+          break;
         }
+        charCount = nextCount;
+      } else if (node.childNodes && node.childNodes.length) {
+        for (let i = node.childNodes.length - 1; i >= 0; i--)
+          nodeStack.unshift(node.childNodes[i]);
+      }
     }
     if (!found) {
-        range.selectNodeContents(el);
-        range.collapse(false);
+      range.selectNodeContents(el);
+      range.collapse(false);
     }
     selection.addRange(range);
+  } catch (_) {
+    // Ignore selection errors (e.g. detached node or restricted focus).
+  }
 }
 
 function findNodeForOffset(container, offset) {
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-    let node = walker.nextNode();
-    let count = 0;
-    while (node) {
-        const next = count + node.textContent.length;
-        if (offset <= next) {
-            return { node, offset: offset - count };
-        }
-        count = next;
-        node = walker.nextNode();
+  const walker = document.createTreeWalker(
+    container,
+    NodeFilter.SHOW_TEXT,
+    null,
+  );
+  let node = walker.nextNode();
+  let count = 0;
+  while (node) {
+    const next = count + node.textContent.length;
+    if (offset <= next) {
+      return { node, offset: offset - count };
     }
-    return { node: container, offset: 0 };
+    count = next;
+    node = walker.nextNode();
+  }
+  return { node: container, offset: 0 };
 }
 
 // ======== Prompt Optimizer ========
 function attachOptimizer(inputEl) {
-    if (!inputEl || inputEl.dataset.ecoAttached) return;
-    inputEl.dataset.ecoAttached = '1';
+  if (!inputEl || inputEl.dataset.ecoAttached) return;
+  inputEl.dataset.ecoAttached = "1";
 
-    const isContentEditable = !!inputEl.isContentEditable || inputEl.tagName === 'DIV' && inputEl.getAttribute('role') === 'textbox';
+  const isContentEditable =
+    !!inputEl.isContentEditable ||
+    (inputEl.tagName === "DIV" && inputEl.getAttribute("role") === "textbox");
 
-    const handleSubmitKey = (e) => {
-        // run on Enter (without Shift/Ctrl/Meta) using capture so it runs before site handlers
-        if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey) return;
+  const handleSubmitKey = (e) => {
+    // run on Enter (without Shift/Ctrl/Meta) using capture so it runs before site handlers
+    if (e.key !== "Enter" || e.shiftKey || e.ctrlKey || e.metaKey) return;
 
-        const original = isContentEditable ? inputEl.innerText : inputEl.value;
-        const optimized = optimizePrompt(original);
+    const original = isContentEditable ? inputEl.innerText : inputEl.value;
+    const optimized = optimizePrompt(original);
 
-        // only update the field if we shortened or changed it meaningfully
-        if (optimized && optimized !== original) {
-            if (isContentEditable) inputEl.innerText = optimized;
-            else inputEl.value = optimized;
+    // only update the field if we shortened or changed it meaningfully
+    if (optimized && optimized !== original) {
+      if (isContentEditable) inputEl.innerText = optimized;
+      else inputEl.value = optimized;
 
-            const last = inputEl.dataset.lastProcessed || '';
-            if (optimized !== last) {
-                const savedTokens = Math.max(0, countTokens(original) - countTokens(optimized));
-                if (savedTokens > 0) {
-                    chrome.storage.local.get(['tokensSaved'], (data) => {
-                        const newTotal = (data.tokensSaved || 0) + savedTokens;
-                        chrome.storage.local.set({ tokensSaved: newTotal });
-                    });
-                }
-                inputEl.dataset.lastProcessed = optimized;
-            }
+      const last = inputEl.dataset.lastProcessed || "";
+      if (optimized !== last) {
+        const savedTokens = Math.max(
+          0,
+          countTokens(original) - countTokens(optimized),
+        );
+        if (savedTokens > 0) {
+          chrome.runtime.sendMessage(
+            {
+              type: "recordAction",
+              payload: {
+                type: "prompt_optimize",
+                tokensSavedDelta: savedTokens,
+                meta: { source: "submit" },
+              },
+            },
+            () => {}
+          );
         }
-        // allow the event to continue so the site will submit the prompt as usual
-    };
+        inputEl.dataset.lastProcessed = optimized;
+      }
+    }
+    // allow the event to continue so the site will submit the prompt as usual
+  };
 
-    // minimal, low-cost input handler: if the field contains "please", schedule removal after 3s
-    const handleInput = (e) => {
-        if (inputEl.dataset._composing) return; // ignore during IME composition
-        const txt = isContentEditable ? inputEl.innerText : inputEl.value;
-        if (/\bplease\b/i.test(txt)) {
-            removePleaseAfterDelay(inputEl, isContentEditable);
-        } else {
-            // if user removed the word before timer fired, clear timer
-            const existing = inputEl.dataset.pleaseTimer;
-            if (existing) { clearTimeout(Number(existing)); inputEl.dataset.pleaseTimer = ''; }
+  // Debounce so we don't read innerText + run regex on every keystroke (causes freeze).
+  let inputDebounceTimer = 0;
+  const handleInput = () => {
+    if (inputEl.dataset._composing) return;
+    if (inputEl.dataset._ecoUpdating) return;
+    if (inputDebounceTimer) clearTimeout(inputDebounceTimer);
+    inputDebounceTimer = setTimeout(() => {
+      inputDebounceTimer = 0;
+      if (!inputEl.isConnected) return;
+      const txt = isContentEditable ? inputEl.innerText : inputEl.value;
+      if (textCouldBeOptimized(txt)) {
+        // Only schedule once so the 3s timer reliably fires after user stops (don't keep resetting).
+        if (!inputEl.dataset.optimizeTimer)
+          optimizeAfterDelay(inputEl, isContentEditable);
+      } else {
+        const existing = inputEl.dataset.optimizeTimer;
+        if (existing) {
+          clearTimeout(Number(existing));
+          inputEl.dataset.optimizeTimer = "";
         }
-    };
+      }
+    }, 120);
+  };
 
-    inputEl.addEventListener('compositionstart', () => { inputEl.dataset._composing = '1'; }, true);
-    inputEl.addEventListener('compositionend', () => { inputEl.dataset._composing = ''; handleInput(); }, true);
-    inputEl.addEventListener('input', handleInput, false);
-    // use capture so we run before page scripts
-    inputEl.addEventListener('keydown', handleSubmitKey, true);
+  inputEl.addEventListener(
+    "compositionstart",
+    () => {
+      inputEl.dataset._composing = "1";
+    },
+    true,
+  );
+  inputEl.addEventListener(
+    "compositionend",
+    () => {
+      inputEl.dataset._composing = "";
+      handleInput();
+    },
+    true,
+  );
+  inputEl.addEventListener("input", handleInput, false);
+  // use capture so we run before page scripts
+  inputEl.addEventListener("keydown", handleSubmitKey, true);
 }
 
 // Attach immediately if textarea exists
 // Attach to existing textareas and common contenteditable chat inputs
-document.querySelectorAll('textarea').forEach(attachOptimizer);
+document.querySelectorAll("textarea").forEach(attachOptimizer);
 document.querySelectorAll('[contenteditable="true"]').forEach(attachOptimizer);
 document.querySelectorAll('[role="textbox"]').forEach(attachOptimizer);
 
-// Observe for dynamically added textareas
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-            if (!node || node.nodeType !== 1) return;
-
-            if (node.tagName === 'TEXTAREA') attachOptimizer(node);
-            if (node.querySelectorAll) {
-                node.querySelectorAll('textarea').forEach(attachOptimizer);
-                node.querySelectorAll('[contenteditable="true"]').forEach(attachOptimizer);
-                node.querySelectorAll('[role="textbox"]').forEach(attachOptimizer);
-            }
-            // also check if the node itself is contenteditable
-            if (node.isContentEditable) attachOptimizer(node);
-        });
-    });
+// Observe for dynamically added inputs; debounce so we don't run on every mutation (freeze fix).
+let observerTimer = 0;
+function runAttachOptimizers() {
+  observerTimer = 0;
+  document.querySelectorAll("textarea").forEach(attachOptimizer);
+  document.querySelectorAll('[contenteditable="true"]').forEach(attachOptimizer);
+  document.querySelectorAll('[role="textbox"]').forEach(attachOptimizer);
+}
+const observer = new MutationObserver(() => {
+  if (observerTimer) clearTimeout(observerTimer);
+  observerTimer = setTimeout(runAttachOptimizers, 300);
 });
 observer.observe(document.body, { childList: true, subtree: true });
-
-// ======== Floating Dashboard ========
-function injectDashboard() {
-    if (document.getElementById('eco-dashboard')) return;
-
-    const div = document.createElement('div');
-    div.id = 'eco-dashboard';
-        div.style = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                width: 240px;
-                padding: 10px;
-                background: #ffffff;
-                color: #08350f;
-                border: 2px solid #0b6b2b;
-                border-radius: 8px;
-                z-index: 999999999;
-                font-family: Arial, sans-serif;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-        `;
-        div.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <h4 style="margin:0;font-size:14px;">Prompt EcoSaver</h4>
-                    <button id="eco-close" title="Close" style="background:transparent;border:none;color:#0b6b2b;font-weight:bold;cursor:pointer;">✕</button>
-                </div>
-                <div style="text-align:left;font-size:13px;">
-                    <p style="margin:4px 0;">Tokens Saved: <strong id="tokens">0</strong></p>
-                    <p style="margin:4px 0;">Energy: <strong id="energy">0</strong> kWh</p>
-                    <p style="margin:4px 0;">CO₂: <strong id="co2">0</strong> kg</p>
-                </div>
-                <div style="text-align:right;margin-top:8px;">
-                    <button id="reset-eco" style="padding:6px 8px;background:#0b6b2b;color:white;border:none;border-radius:4px;cursor:pointer;">Reset</button>
-                </div>
-        `;
-    document.body.appendChild(div);
-
-    // Update numbers
-    const kWhPer1000Tokens = 0.003;
-    const co2PerKWh = 0.5;
-
-    setInterval(() => {
-        chrome.storage.local.get(['tokensSaved'], (data) => {
-            const tokens = data.tokensSaved || 0;
-            const energy = (tokens / 1000) * kWhPer1000Tokens;
-            const co2 = energy * co2PerKWh;
-            div.querySelector('#tokens').innerText = tokens;
-            div.querySelector('#energy').innerText = energy.toFixed(4);
-            div.querySelector('#co2').innerText = co2.toFixed(4);
-        });
-    }, 1000);
-
-    // Reset button
-    div.querySelector('#reset-eco').addEventListener('click', () => {
-        chrome.storage.local.set({ tokensSaved: 0 });
-    });
-    // Close button
-    const closeBtn = div.querySelector('#eco-close');
-    if (closeBtn) closeBtn.addEventListener('click', () => div.remove());
-}
-
-// Inject after a short delay to let page load
-setTimeout(injectDashboard, 2000);

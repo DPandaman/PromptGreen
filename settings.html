@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings – PromptGreen</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="settings-page" role="main">
+    <header class="header">
+      <a href="#" class="back" id="back" aria-label="Back to popup">←</a>
+      <h1>Settings</h1>
+    </header>
+
+    <section class="section">
+      <h2>Appearance</h2>
+      <label for="theme">Theme</label>
+      <select id="theme">
+        <option value="auto">Auto (system)</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </section>
+
+    <section class="section">
+      <h2>Region &amp; estimates</h2>
+      <p class="hint">Used to estimate CO₂. Custom lets you enter your own factor.</p>
+      <label for="region">Region</label>
+      <select id="region">
+        <option value="US">United States</option>
+        <option value="EU">European Union</option>
+        <option value="IN">India</option>
+        <option value="custom">Custom</option>
+      </select>
+      <label for="co2">CO₂ (grams per kWh)</label>
+      <input type="number" id="co2" min="0" step="1" placeholder="e.g. 385">
+      <label for="kwh">kWh per 1,000 tokens</label>
+      <input type="number" id="kwh" min="0" step="0.001" placeholder="e.g. 0.003">
+      <label for="timeSaved">Time saved (seconds per 1,000 tokens) <span class="optional">optional</span></label>
+      <input type="number" id="timeSaved" min="0" step="1" placeholder="e.g. 5">
+    </section>
+
+    <section class="section privacy">
+      <h2>Privacy</h2>
+      <p>All data stays on your device. No external servers. We never read page content by default.</p>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+    </div>
+  </div>
+  <script src="shared/constants.js"></script>
+  <script src="shared/storage.js"></script>
+  <script src="shared/ui.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

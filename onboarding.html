@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome – PromptGreen</title>
+  <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+  <div class="onboarding" role="main">
+    <header class="header">
+      <span class="logo" aria-hidden="true">🌱</span>
+      <h1>Welcome to PromptGreen</h1>
+      <p class="subtitle">Track your AI savings and impact</p>
+    </header>
+
+    <section class="section">
+      <h2>What we track</h2>
+      <ul>
+        <li>Tokens saved when you optimize prompts on AI sites</li>
+        <li>Estimated energy (kWh) and CO₂ (grams) from your usage</li>
+        <li>Session duration and number of actions</li>
+      </ul>
+    </section>
+
+    <section class="section privacy">
+      <h2>Privacy</h2>
+      <p><strong>All data stays on your device.</strong> No external servers. We never read your page content by default. You control when to start and end sessions.</p>
+    </section>
+
+    <section class="section">
+      <h2>How to use</h2>
+      <ol>
+        <li><strong>Start Session</strong> when you begin using AI tools.</li>
+        <li>Use ChatGPT, etc. as usual — we count savings from prompt optimization.</li>
+        <li><strong>End Session</strong> when done. Open <strong>View Report</strong> to see your impact.</li>
+      </ol>
+    </section>
+
+    <section class="section form">
+      <label for="region">Region (for CO₂ estimates)</label>
+      <select id="region" aria-describedby="region-desc">
+        <option value="US">United States</option>
+        <option value="EU">European Union</option>
+        <option value="IN">India</option>
+        <option value="custom">Custom</option>
+      </select>
+      <span id="region-desc" class="hint">Used to estimate carbon intensity of energy.</span>
+
+      <label for="theme">Theme</label>
+      <select id="theme" aria-describedby="theme-desc">
+        <option value="auto">Auto (system)</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+      <span id="theme-desc" class="hint">You can change this later in Settings.</span>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btnStart">
+        Get started
+      </button>
+    </div>
+  </div>
+  <script src="shared/constants.js"></script>
+  <script src="shared/storage.js"></script>
+  <script src="shared/ui.js"></script>
+  <script src="onboarding.js"></script>
+</body>
+</html>

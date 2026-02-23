@@ -1,0 +1,138 @@
+:root {
+  --ob-bg: #f8faf8;
+  --ob-text: #1a2e1a;
+  --ob-muted: #5a6b5a;
+  --ob-primary: #0d6b2d;
+  --ob-border: #d0ddd0;
+  --ob-radius: 12px;
+}
+
+[data-theme="dark"] {
+  --ob-bg: #0f1612;
+  --ob-text: #e2ede2;
+  --ob-muted: #8a9a8a;
+  --ob-primary: #2d9d4e;
+  --ob-border: #2d3d2d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ob-text);
+  background: var(--ob-bg);
+  width: 360px;
+  min-height: 480px;
+}
+
+.onboarding {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ob-border);
+}
+
+.logo { font-size: 36px; display: block; margin-bottom: 8px; }
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ob-muted);
+}
+
+.section h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ob-muted);
+}
+
+.section ul, .section ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.section li {
+  margin: 4px 0;
+  line-height: 1.45;
+}
+
+.section.privacy {
+  background: rgba(13, 107, 45, 0.08);
+  padding: 12px 14px;
+  border-radius: var(--ob-radius);
+  border: 1px solid rgba(13, 107, 45, 0.2);
+}
+
+.form label {
+  display: block;
+  margin: 12px 0 4px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.form select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ob-border);
+  background: var(--ob-bg);
+  color: var(--ob-text);
+  font-size: 14px;
+}
+
+.form .hint {
+  display: block;
+  font-size: 11px;
+  color: var(--ob-muted);
+  margin-top: 4px;
+}
+
+.actions {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--ob-radius);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary {
+  background: var(--ob-primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn-primary:active { transform: scale(0.98); }
+
+.btn:focus-visible {
+  outline: 2px solid var(--ob-primary);
+  outline-offset: 2px;
+}

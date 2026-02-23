@@ -1,18 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Prompt EcoSaver</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptGreen</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <h2>Prompt EcoSaver</h2>
-    <div>
-        <p>Tokens Saved: <span id="tokens">0</span></p>
-        <p>Energy Saved: <span id="energy">0</span> kWh</p>
-        <p>CO₂ Saved: <span id="co2">0</span> kg</p>
+  <div class="popup" role="application" aria-label="PromptGreen">
+    <header class="header">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🌱</span>
+        <h1 class="title">PromptGreen</h1>
+      </div>
+      <div class="status" id="status" aria-live="polite">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Idle</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="primary-actions">
+        <button type="button" class="btn btn-primary" id="btnStartEnd" aria-label="Start or end session">
+          Start Session
+        </button>
+      </div>
+
+      <section class="metrics-preview" id="metricsPreview" aria-label="Session metrics" hidden>
+        <div class="metric">
+          <span class="metric-value" id="previewTokens">0</span>
+          <span class="metric-label">Tokens saved</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="previewEnergy">0</span>
+          <span class="metric-label">kWh</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="previewCo2">0</span>
+          <span class="metric-label">CO₂ (g)</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="previewTime">0m 0s</span>
+          <span class="metric-label">Session time</span>
+        </div>
+      </section>
+
+      <div class="skeleton" id="skeleton" aria-hidden="true">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+
+      <div class="secondary-actions">
+        <a href="report.html" class="btn btn-secondary" id="linkReport" target="_blank">View Report</a>
+        <a href="settings.html" class="btn btn-secondary" id="linkSettings" target="_blank">Settings</a>
+      </div>
+    </main>
+
+    <div class="resume-banner" id="resumeBanner" hidden>
+      <p>You had a session running. <button type="button" class="link-btn" id="btnResume">Resume</button></p>
     </div>
-    <button id="reset">Reset Stats</button>
-    <script src="popup.js"></script>
+  </div>
+  <script src="shared/constants.js"></script>
+  <script src="shared/metrics.js"></script>
+  <script src="shared/storage.js"></script>
+  <script src="shared/ui.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>
