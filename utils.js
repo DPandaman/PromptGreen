@@ -8,22 +8,30 @@ export function optimizePrompt(text) {
 
     // Basic local heuristics
     let optimized = text;
-
-    // remove filler words
-    const fillers = ["please", "kindly", "actually", "just", "literally"];
-    fillers.forEach(f => {
-        const re = new RegExp(`\\b${f}\\b`, "gi");
-        optimized = optimized.replace(re, '');
-    });
-
-    // collapse multiple spaces
+    // 1) Normalize whitespace
     optimized = optimized.replace(/\s+/g, ' ').trim();
 
-    // remove redundant phrases (simple heuristic)
-    const redundantPhrases = ["Could you", "Can you", "Would you mind"];
-    redundantPhrases.forEach(p => {
-        optimized = optimized.replace(new RegExp(p, "gi"), '');
+    // 2) Remove polite filler words/phrases that don't change intent
+    const fillers = ["please", "kindly", "actually", "just", "literally", "thanks", "thank you"]; 
+    fillers.forEach(f => {
+        optimized = optimized.replace(new RegExp(`\\b${f}\\b`, 'gi'), '');
     });
+
+    // 3) Shorten common opening phrases to imperative form
+    const openings = ["Could you please", "Could you", "Can you please", "Can you", "Would you please", "Would you mind", "Would you"]; 
+    openings.forEach(p => {
+        optimized = optimized.replace(new RegExp(p, 'gi'), '');
+    });
+
+    // 4) Collapse repeated words (e.g., "very very" -> "very")
+    optimized = optimized.replace(/\b(\w+)(?:\s+\1)+\b/gi, '$1');
+
+    // 5) Trim leftover punctuation/spacing
+    optimized = optimized.replace(/\s+([,.!?;:])/g, '$1');
+    optimized = optimized.replace(/\s+/g, ' ').trim();
+
+    // If optimization removed everything, fall back to original
+    if (!optimized) return text;
 
     return optimized;
 }
