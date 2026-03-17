@@ -24,7 +24,10 @@ Every optimized prompt helps make AI a little greener.
 
 ## 🚀 How to Use
 
-Getting started with PromptGreen is quick and simple. First, clone this repository onto your computer using `git clone https://github.com/YOUR_REPO_LINK/promptgreen.git`. Once the repository is downloaded locally, open **Google Chrome** and navigate to the extensions management page by typing `chrome://extensions/` into your browser’s address bar. In the top-right corner of the page, enable **Developer Mode**, which allows Chrome to install extensions from local folders. Next, click the **“Load unpacked”** button and select the **PromptGreen repository folder** that you cloned to your machine. Chrome will then install the extension automatically, and voilà — your **PromptGreen extension** is ready to use. Once installed, the extension will begin analyzing and optimizing prompts to reduce unnecessary tokens before they are processed by AI models, helping you create cleaner prompts while reducing unnecessary AI computation and energy usage.
+* Clone this repository onto your computer using `https://github.com/DPandaman/PromptGreen.git`
+* Once the repository is downloaded locally, open **Google Chrome** and navigate to the extensions management page by typing `chrome://extensions/` into your browser’s address bar. In the top-right corner of the page, enable **Developer Mode**, which allows Chrome to install extensions from local folders
+* Next, click the **“Load unpacked”** button and select the **PromptGreen repository folder** that you cloned to your machine. Chrome will then install the extension automatically, and voilà — your **PromptGreen extension** is ready to use
+* Once installed, the extension will begin analyzing and optimizing prompts to reduce unnecessary tokens before they are processed by AI models, helping you create cleaner prompts while reducing unnecessary AI computation and energy usage.
 
 _______________
 ### Made by:
