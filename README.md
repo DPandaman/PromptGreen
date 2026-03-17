@@ -2,21 +2,25 @@
 
 ## 🌍 Prompt AI in a way that saves the environment!
 
-Artificial intelligence and large-scale data processing require enormous amounts of electricity. From training models to handling everyday prompts and storing vast amounts of information, AI's electricty usage has exponenetially jumped in the past couple years. Most users never see this cost directly, but the energy demand behind each interaction contributes to rising carbon emissions and growing strain on global infrastructure. As AI adoption accelerates, its environmental footprint quietly grows with it, impacting the world around us in ways that are easy to overlook.
+Artificial intelligence and large-scale data processing rely on **energy-intensive infrastructure** that consumes enormous amounts of electricity. From training advanced models to processing everyday prompts and storing massive datasets, AI systems require powerful compute resources operating continuously in global data centers. Over the past few years, AI’s electricity usage has **surged dramatically** as large language models and AI-powered tools have become widely adopted.
+
+Most users never see this hidden cost directly. However, every prompt sent to an AI system triggers computation that contributes to **increased energy demand, higher carbon emissions, and growing pressure on global infrastructure**. As AI adoption accelerates, its environmental footprint continues to expand quietly in the background, affecting the world in ways that are often overlooked.
 
 ## 🔢 What Are Tokens?
 
-Large language models don’t read text the way humans do — they process input as **tokens**, which are small chunks of text (roughly 3–4 characters or part of a word). Every prompt you send is broken into tokens, and the number of tokens directly determines how much computation — and therefore energy — is required to process the request.
+Large language models don’t read text the way humans do - they process input as **tokens**, which are small chunks of text (roughly 3–4 characters or parts of words). Every prompt you send is broken into tokens, and the number of tokens directly determines how much computation — and therefore energy - is required to process the request.
 
 More tokens = more computation = more electricity usage.
 
-Even small amounts of unnecessary text such as filler words, redundant phrasing, or repeated content, all increase token count and amplify energy consumption at scale. AI doesn't care about manners or grammar, just bare, minimum required information is good enough!
+Even small inefficiencies such as filler words, redundant phrasing, repeated instructions, or unnecessary verbosity increase token counts and amplify computational demand at scale. AI systems do not require conversational filler or politeness; they perform best when prompts are **clear, concise, and information-dense**.
 
 ## ⚡ Our Solution
 
-This project reduces unnecessary AI compute by optimizing prompts before they reach the model. It analyzes input text, removes redundant phrasing, compresses intent, and restructures language to use fewer tokens while preserving meaning. Because token count directly determines how much computation an AI system performs, reducing tokens lowers processing demand and energy usage per interaction. These small efficiency improvements scale across thousands of prompts, making AI usage more efficient and environmentally responsible without changing the user experience.
+This project reduces unnecessary AI computation by **optimizing prompts before they reach the model**. PromptGreen analyzes input text, removes redundant phrasing, compresses intent, and restructures language to use fewer tokens while preserving the original meaning.
 
-Every smart prompt saves the environment!
+Because token count directly determines the amount of computation an AI system performs, reducing tokens lowers processing demand and decreases energy usage per interaction. These efficiency improvements scale across thousands or millions of prompts, making AI usage more efficient and environmentally responsible without changing the user experience.
+
+Every optimized prompt helps make AI a little greener.
 
 _______________
 ### Made by:
@@ -24,4 +28,4 @@ _______________
 * Devanshu Pandya 
 * Kush Patel 
 * Adithya Raman 
-* Yogi Patel 
+* Yogi Patel
